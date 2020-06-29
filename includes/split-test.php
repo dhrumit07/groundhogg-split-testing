@@ -1,6 +1,5 @@
 <?php
 
-
 namespace GroundhoggSplitTesting;
 
 use Groundhogg\Broadcast;
@@ -8,6 +7,8 @@ use Groundhogg\Contact;
 use Groundhogg\Email;
 use Groundhogg\Event;
 use Groundhogg\Plugin;
+use Groundhogg\Step;
+use Groundhogg\Steps\Funnel_Step;
 use function Groundhogg\get_array_var;
 use function Groundhogg\get_request_var;
 use function Groundhogg\html;
@@ -21,13 +22,13 @@ class Split_Test {
 	}
 
 	/**
-	 *
+	 * Returns email object based on the email_id in the event
 	 *
 	 * @param $email Email
 	 * @param $broadcst Broadcast
 	 * @param $contact Contact
 	 * @param $event Event
-
+	 *
 	 * @return Email
 	 */
 	public function email_object( $email, $broadcst, $contact, $event ) {
@@ -37,7 +38,15 @@ class Split_Test {
 
 	protected $count = 0;
 
-	function modify_args( $args ) {
+
+	/**
+	 * Updates the event arguments while scheduling the broadcast.
+	 *
+	 * @param $args
+	 *
+	 * @return mixed
+	 */
+	public function modify_args( $args ) {
 
 		$broadcast = new Broadcast( absint( get_array_var( $args, 'step_id' ) ) );
 
@@ -58,7 +67,7 @@ class Split_Test {
 	 * @param $broadcast_id
 	 * @param $config
 	 */
-	function add_split_test_info( $broadcast_id, $config ) {
+	public function add_split_test_info( $broadcast_id, $config ) {
 		if ( get_request_var( 'split_test' ) && get_request_var( 'split_test_email' ) ) {
 			$broadcast = new Broadcast( $broadcast_id );
 			$broadcast->add_meta( 'split_test_email', absint( get_request_var( 'split_test_email' ) ) );
@@ -68,7 +77,7 @@ class Split_Test {
 	/**
 	 * Add controls in the  broadcast page
 	 */
-	function add_split_test_email_settings() {
+	public function add_split_test_email_settings() {
 		?>
         <tr class="form-field term-email-wrap">
             <th scope="row"><label for="email_id"><?php _e( 'Split Test', 'groundhogg' ) ?></label></th>

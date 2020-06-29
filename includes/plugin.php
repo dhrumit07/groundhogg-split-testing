@@ -6,6 +6,7 @@ use Groundhogg\Admin\Admin_Menu;
 use Groundhogg\DB\Manager;
 use Groundhogg\Extension;
 use GroundhoggSplitTesting\Reports\Split_Testing_Reports;
+use GroundhoggSplitTesting\Steps\Split_Email;
 
 class Plugin extends Extension {
 
@@ -47,6 +48,15 @@ class Plugin extends Extension {
 	}
 
 
+	/**
+	 * register the new Action.
+	 *
+	 * @param \Groundhogg\Steps\Manager $manager
+	 */
+	public function register_funnel_steps( $manager )
+	{
+		$manager->add_step( new Split_Email());
+	}
 
 	public function register_admin_scripts($is_minified, $IS_MINIFIED)
 	{
