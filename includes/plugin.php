@@ -35,7 +35,7 @@ class Plugin extends Extension {
 	public function init_components() {
 
 		new Split_Test();
-		new Split_Testing_Reports();
+//		new Split_Testing_Reports();
 	}
 
 	/**

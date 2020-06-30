@@ -20,8 +20,8 @@ class Split_Testing_Reports {
 			'name'     => __( 'Split Testing', 'groundhogg-edd' ),
 			'slug'     => 'split-testing',
 			'reports'  => [
-				'chart_broadcast_a',
-				'chart_broadcast_b',
+				'chart_broadcast_email_a',
+				'chart_broadcast_email_b',
 				'table_broadcast_link_clicked_a',
 				'table_broadcast_link_clicked_b',
 				'table_broadcast_stats_compare'
@@ -44,12 +44,12 @@ class Split_Testing_Reports {
 		$this->end   = $reports->end;
 		$new_reports = [
 			[
-				'id'       => 'chart_broadcast_a',
-				'callback' => [ $this, 'chart_broadcast_a' ]
+				'id'       => 'chart_broadcast_email_a',
+				'callback' => [ $this, 'chart_broadcast_email_a' ]
 			],
 			[
-				'id'       => 'chart_broadcast_b',
-				'callback' => [ $this, 'chart_broadcast_b' ]
+				'id'       => 'chart_broadcast_email_b',
+				'callback' => [ $this, 'chart_broadcast_email_b' ]
 			],
 
 			[
@@ -74,15 +74,15 @@ class Split_Testing_Reports {
 		}
 	}
 
-	public function chart_broadcast_a() {
-		$report = new Chart_Broadcast_A( $this->start, $this->end );
+	public function chart_broadcast_email_a() {
+		$report = new Chart_Broadcast_Email_A( $this->start, $this->end );
 
 		return $report->get_data();
 	}
 
 
-	public function chart_broadcast_b() {
-		$report = new Chart_Broadcast_B( $this->start, $this->end );
+	public function chart_broadcast_email_b() {
+		$report = new Chart_Broadcast_email_B( $this->start, $this->end );
 
 		return $report->get_data();
 	}

@@ -5,6 +5,7 @@ namespace GroundhoggSplitTesting\Reports;
 
 use Groundhogg\Broadcast;
 use Groundhogg\Classes\Activity;
+use Groundhogg\Email;
 use Groundhogg\Event;
 use Groundhogg\Plugin;
 use Groundhogg\Reporting\New_Reports\Base_Table_Report;
@@ -21,67 +22,21 @@ use function Groundhogg\percentage;
 
 class Table_Broadcast_Stats_Compare extends Base_Table_Report {
 
-	/**
-	 * @return mixed
-	 */
-	protected function get_broadcast_id_a() {
-//		$id = absint( get_array_var( get_request_var( 'data', [] ), 'broadcast_id' ) );
-//
-//		if ( ! $id ) {
-//
-//			$broadcasts = get_db( 'broadcasts' )->query( [
-//				'status'  => 'sent',
-//				'orderby' => 'send_time',
-//				'order'   => 'desc',
-//				'limit'   => 1
-//			] );
-//
-//			if ( ! empty( $broadcasts ) ) {
-//				$id = absint( array_shift( $broadcasts )->ID );
-//			}
-//		}
-//
-//		return $id;
-
-		return 219;
+	protected function get_broadcast_id() {
+		return get_request_var( 'data' )['broadcast_id'];
 	}
 
-	/**
-	 * @return mixed
-	 */
-	protected function get_broadcast_id_b() {
-//		$id = absint( get_array_var( get_request_var( 'data', [] ), 'broadcast_id' ) );
-//
-//		if ( ! $id ) {
-//
-//			$broadcasts = get_db( 'broadcasts' )->query( [
-//				'status'  => 'sent',
-//				'orderby' => 'send_time',
-//				'order'   => 'desc',
-//				'limit'   => 1
-//			] );
-//
-//			if ( ! empty( $broadcasts ) ) {
-//				$id = absint( array_shift( $broadcasts )->ID );
-//			}
-//		}
-//		return $id;
-
-		return 219;
-	}
 
 	protected function get_table_data() {
 
-		$broadcast_a = new Broadcast( $this->get_broadcast_id_a() );
-		$stats_a     = $broadcast_a->get_report_data();
+		$broadcast = new Broadcast( $this->get_broadcast_id() );
 
-		$title_a = $broadcast_a->is_email() ? $broadcast_a->get_object()->get_subject_line() : $broadcast_a->get_title();
+		$stats_a = $broadcast->get_report_data();
+		$title_a = $broadcast->is_email() ? $broadcast->get_object()->get_subject_line() : $broadcast->get_title();
 
-
-		$broadcast_b = new Broadcast( $this->get_broadcast_id_b() );
-		$stats_b     = $broadcast_b->get_report_data();
-
-		$title_b = $broadcast_b->is_email() ? $broadcast_b->get_object()->get_subject_line() : $broadcast_b->get_title();
+		$email_b = new Email( absint( $broadcast->get_meta( 'split_test_email' ) ) );
+		$stats_b = $broadcast->get_report_data( $email_b->get_id() );
+		$title_b = $broadcast->is_email() ? $email_b->get_subject_line() : $broadcast->get_title();
 
 
 		return [
@@ -90,7 +45,7 @@ class Table_Broadcast_Stats_Compare extends Base_Table_Report {
 				'data'  => html()->wrap( $title_a, 'a', [
 					'href'  => admin_page_url( 'gh_reporting', [
 						'tab'       => 'broadcasts',
-						'broadcast' => $broadcast_a->get_id()
+						'broadcast' => $broadcast->get_id()
 					] ),
 					'title' => $title_a,
 //					'class' => 'number-total'
@@ -98,16 +53,11 @@ class Table_Broadcast_Stats_Compare extends Base_Table_Report {
 				'data1' => html()->wrap( $title_b, 'a', [
 					'href'  => admin_page_url( 'gh_reporting', [
 						'tab'       => 'broadcasts',
-						'broadcast' => $broadcast_b->get_id()
+						'broadcast' => $broadcast->get_id()
 					] ),
 					'title' => $title_b,
 //					'class' => 'number-total'
 				] )
-			],
-			[
-				'label' => __( 'Sent', 'groundhogg' ),
-				'data'  => date_i18n( get_date_time_format(), convert_to_local_time( $broadcast_a->get_send_time() ) ),
-				'data1' => date_i18n( get_date_time_format(), convert_to_local_time( $broadcast_b->get_send_time() ) ),
 			],
 			[
 				'label' => __( 'Total Delivered', 'groundhogg' ),
@@ -115,9 +65,10 @@ class Table_Broadcast_Stats_Compare extends Base_Table_Report {
 					'href'  => add_query_arg(
 						[
 							'report' => [
-								'type'   => Event::BROADCAST,
-								'step'   => $broadcast_a->get_id(),
-								'status' => Event::COMPLETE
+								'type'     => Event::BROADCAST,
+								'step'     => $broadcast->get_id(),
+								'status'   => Event::COMPLETE,
+								'email_id' => $broadcast->get_object()->get_id()
 							]
 						],
 						admin_url( sprintf( 'admin.php?page=gh_contacts' ) )
@@ -128,9 +79,10 @@ class Table_Broadcast_Stats_Compare extends Base_Table_Report {
 					'href'  => add_query_arg(
 						[
 							'report' => [
-								'type'   => Event::BROADCAST,
-								'step'   => $broadcast_b->get_id(),
-								'status' => Event::COMPLETE
+								'type'     => Event::BROADCAST,
+								'step'     => $broadcast->get_id(),
+								'status'   => Event::COMPLETE,
+								'email_id' => $email_b->get_id()
 							]
 						],
 						admin_url( sprintf( 'admin.php?page=gh_contacts' ) )
@@ -145,8 +97,9 @@ class Table_Broadcast_Stats_Compare extends Base_Table_Report {
 						[
 							'activity' => [
 								'activity_type' => Activity::EMAIL_OPENED,
-								'step_id'       => $broadcast_a->get_id(),
-								'funnel_id'     => $broadcast_a->get_funnel_id()
+								'step_id'       => $broadcast->get_id(),
+								'funnel_id'     => $broadcast->get_funnel_id(),
+								'email_id'      => $email_b->get_id()
 							]
 						],
 						admin_url( sprintf( 'admin.php?page=gh_contacts' ) )
@@ -158,8 +111,9 @@ class Table_Broadcast_Stats_Compare extends Base_Table_Report {
 						[
 							'activity' => [
 								'activity_type' => Activity::EMAIL_OPENED,
-								'step_id'       => $broadcast_b->get_id(),
-								'funnel_id'     => $broadcast_b->get_funnel_id()
+								'step_id'       => $broadcast->get_id(),
+								'funnel_id'     => $broadcast->get_funnel_id(),
+								'email_id'      => $email_b->get_id()
 							]
 						],
 						admin_url( sprintf( 'admin.php?page=gh_contacts' ) )
@@ -183,8 +137,9 @@ class Table_Broadcast_Stats_Compare extends Base_Table_Report {
 						[
 							'activity' => [
 								'activity_type' => Activity::EMAIL_CLICKED,
-								'step_id'       => $broadcast_a->get_id(),
-								'funnel_id'     => $broadcast_a->get_funnel_id()
+								'step_id'       => $broadcast->get_id(),
+								'funnel_id'     => $broadcast->get_funnel_id(),
+								'email_id'      => $email_b->get_id()
 							]
 						],
 						admin_url( sprintf( 'admin.php?page=gh_contacts' ) )
@@ -196,8 +151,9 @@ class Table_Broadcast_Stats_Compare extends Base_Table_Report {
 						[
 							'activity' => [
 								'activity_type' => Activity::EMAIL_CLICKED,
-								'step_id'       => $broadcast_b->get_id(),
-								'funnel_id'     => $broadcast_b->get_funnel_id()
+								'step_id'       => $broadcast->get_id(),
+								'funnel_id'     => $broadcast->get_funnel_id(),
+								'email_id'      => $email_b->get_id()
 							]
 						],
 						admin_url( sprintf( 'admin.php?page=gh_contacts' ) )
@@ -222,8 +178,9 @@ class Table_Broadcast_Stats_Compare extends Base_Table_Report {
 						[
 							'activity' => [
 								'activity_type' => Activity::UNSUBSCRIBED,
-								'step_id'       => $broadcast_a->get_id(),
-								'funnel_id'     => $broadcast_a->get_funnel_id()
+								'step_id'       => $broadcast->get_id(),
+								'funnel_id'     => $broadcast->get_funnel_id(),
+								'email_id'      => $email_b->get_id()
 							]
 						],
 						admin_url( sprintf( 'admin.php?page=gh_contacts' ) )
@@ -235,8 +192,9 @@ class Table_Broadcast_Stats_Compare extends Base_Table_Report {
 						[
 							'activity' => [
 								'activity_type' => Activity::UNSUBSCRIBED,
-								'step_id'       => $broadcast_b->get_id(),
-								'funnel_id'     => $broadcast_b->get_funnel_id()
+								'step_id'       => $broadcast->get_id(),
+								'funnel_id'     => $broadcast->get_funnel_id(),
+								'email_id'      => $email_b->get_id()
 							]
 						],
 						admin_url( sprintf( 'admin.php?page=gh_contacts' ) )

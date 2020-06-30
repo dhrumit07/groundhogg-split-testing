@@ -17,8 +17,8 @@ use function Groundhogg\percentage;
 class Table_Broadcast_Link_Clicked_A extends Table_Broadcast_Link_Clicked {
 
 	protected function get_broadcast_id() {
-//		return get_array_var( get_request_var( 'data', [] ), 'broadcast_id' );
-		return 219;
+		return get_array_var( get_request_var( 'data', [] ), 'broadcast_id' );
+//		return 219;
 	}
 
 
