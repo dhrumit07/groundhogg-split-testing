@@ -7,6 +7,7 @@ use Groundhogg\Email;
 use Groundhogg\Reporting\New_Reports\Chart_Draw;
 use Groundhogg\Reporting\Reporting;
 use Groundhogg\Steps\Actions\Action;
+use Groundhogg\Steps\Actions\Send_Email;
 use Groundhogg\Utils\Graph;
 use function Groundhogg\get_array_var;
 use Groundhogg\Preferences;
@@ -40,7 +41,7 @@ if ( ! defined( 'ABSPATH' ) ) {
  * @see         WPGH_Email::send()
  * @since       File available since Release 0.9
  */
-class Split_Email extends Action {
+class Split_Email extends Send_Email {
 
 
 	/**
@@ -86,14 +87,6 @@ class Split_Email extends Action {
 		return GROUNDHOGG_ASSETS_URL . '/images/funnel-icons/send-email.png';
 	}
 
-	public function admin_scripts() {
-//		wp_enqueue_script( 'groundhogg-funnel-email' );
-//		wp_localize_script( 'groundhogg-funnel-email', 'EmailStep', array(
-//			'edit_email_path'     => admin_url( 'admin.php?page=gh_emails&action=edit' ),
-//			'add_email_path'      => admin_url( 'admin.php?page=gh_emails&action=add' ),
-//			'save_changes_prompt' => _x( "You have changes which have not been saved. Are you sure you want to exit?", 'notice', 'groundhogg' ),
-//		) );
-	}
 
 	/**
 	 * Display the settings
@@ -101,98 +94,121 @@ class Split_Email extends Action {
 	 * @param $step Step
 	 */
 	public function settings( $step ) {
-
 		$html = Plugin::$instance->utils->html;
 
-		$email_id = $this->get_setting( 'email_id' );
-		$email    = Plugin::$instance->utils->get_email( $email_id );
+		if ( $this->get_setting( 'winner' ) ) {
+			parent::settings( $step );
 
-		$html->start_form_table();
+			$html->start_form_table();
 
-		$html->start_row();
+			$html->start_row();
 
-		$html->th( __( 'Select an email to send:', 'groundhogg' ) );
-		$html->td( [
-			// EMAIL ID DROPDOWN
-			$html->dropdown_emails( [
-				'name'     => $this->setting_name_prefix( 'email_id' ),
-				'id'       => $this->setting_id_prefix( 'email_id' ),
-				'selected' => $this->get_setting( 'email_id' ),
-			] ),
-			'&nbsp',
-			$html->button( [
-				'title' => 'set as Winner',
-				'text'  => _x( 'Set as Winner', 'action', 'groundhogg' ),
-				'class' => 'button button-secondary',
-				'name'  => $this->setting_name_prefix( 'winner_a' ),
-				'id'    => $this->setting_id_prefix( 'winner_a' ),
-				'type'  => 'submit'
-			] ),
-			// ROW ACTIONS
-			"<div class=\"row-actions\">",
-			// EDIT EMAIL
-			$html->button( [
-				'title' => 'Edit Email',
-				'text'  => _x( 'Edit Email', 'action', 'groundhogg' ),
-				'class' => 'button button-primary edit-email',
-			] ),
-			'&nbsp;',
-			// ADD NEW EMAIL
-			$html->button( [
-				'title' => 'Create New Email',
-				'text'  => _x( 'Create New Email', 'action', 'groundhogg' ),
-				'class' => 'button button-secondary add-email',
-			] ),
-			"</div>",
+			$html->th( __( 'Enable split email', 'groundhogg' ) );
+			$html->td( [
+				// EMAIL ID DROPDOWN
+				$html->checkbox( [
+					'name'     => $this->setting_name_prefix( 'enable_split' ),
+					'id'       => $this->setting_id_prefix( 'enable_split' ),
+					'label'     => __('Enabled')
+				] ),
 
-		] );
+			] );
 
-		$html->end_row();
+			$html->end_row();
+			$html->end_form_table();
 
 
-		$html->start_row();
+		} else {
 
-		$html->th( __( 'Split Test email:', 'groundhogg' ) );
-		$html->td( [
-			// EMAIL ID DROPDOWN
-			$html->dropdown_emails( [
-				'name'     => $this->setting_name_prefix( 'split_email_id' ),
-				'id'       => $this->setting_id_prefix( 'split_email_id' ),
-				'selected' => $this->get_setting( 'split_email_id' ),
-			] ),
-			'&nbsp',
-			$html->button( [
-				'title' => 'set as Winner',
-				'text'  => _x( 'Set as Winner', 'action', 'groundhogg' ),
-				'class' => 'button button-secondary',
-				'name'  => $this->setting_name_prefix( 'winner_b' ),
-				'id'    => $this->setting_id_prefix( 'winner_b' ),
-				'value' => 'winner_b',
-				'type'  => 'submit'
-			] ),
 
-			"<div class=\"row-actions\">",
-			// EDIT EMAIL
-			$html->button( [
-				'title' => 'Edit Email',
-				'text'  => _x( 'Edit Email', 'action', 'groundhogg' ),
-				'class' => 'button button-primary edit-email',
-			] ),
-			'&nbsp;',
-			// ADD NEW EMAIL
-			$html->button( [
-				'title' => 'Create New Email',
-				'text'  => _x( 'Create New Email', 'action', 'groundhogg' ),
-				'class' => 'button button-secondary add-email',
-			] ),
-			"</div>",
+			$html->start_form_table();
 
-		] );
+			$html->start_row();
 
-		$html->end_row();
+			$html->th( __( 'Split Email (Email A):', 'groundhogg' ) );
+			$html->td( [
+				// EMAIL ID DROPDOWN
+				$html->dropdown_emails( [
+					'name'     => $this->setting_name_prefix( 'email_a_id' ),
+					'id'       => $this->setting_id_prefix( 'email_a_id' ),
+					'selected' => $this->get_setting( 'email_a_id' ),
+				] ),
+				// ROW ACTIONS
+				"<div class=\"row-actions\">",
+				// EDIT EMAIL
+				$html->button( [
+					'title' => 'Edit Email',
+					'text'  => _x( 'Edit Email', 'action', 'groundhogg' ),
+					'class' => 'button button-primary edit-email',
+				] ),
+				'&nbsp;',
+				// ADD NEW EMAIL
+				$html->button( [
+					'title' => 'Create New Email',
+					'text'  => _x( 'Create New Email', 'action', 'groundhogg' ),
+					'class' => 'button button-secondary add-email',
+				] ),
+				"</div>",
+				$html->wrap( [
+					$html->input( [
 
-		$html->end_form_table();
-		$html->end_form_table();
+						'name'  => $this->setting_name_prefix( 'winner' ),
+						'id'    => $this->setting_id_prefix( 'winner' ),
+						'type'  => 'radio',
+						'value' => 'winner_a',
+					] ),
+					__( 'Declare this email as winner' ),
+				], 'p' ),
+
+			] );
+
+			$html->end_row();
+
+
+			$html->start_row();
+
+			$html->th( __( 'Split Email (Email B):', 'groundhogg' ) );
+			$html->td( [
+				// EMAIL ID DROPDOWN
+				$html->dropdown_emails( [
+					'name'     => $this->setting_name_prefix( 'email_b_id' ),
+					'id'       => $this->setting_id_prefix( 'email_b_id' ),
+					'selected' => $this->get_setting( 'email_b_id' ),
+				] ),
+				"<div class=\"row-actions\">",
+				// EDIT EMAIL
+				$html->button( [
+					'title' => 'Edit Email',
+					'text'  => _x( 'Edit Email', 'action', 'groundhogg' ),
+					'class' => 'button button-primary edit-email',
+				] ),
+				'&nbsp;',
+				// ADD NEW EMAIL
+				$html->button( [
+					'title' => 'Create New Email',
+					'text'  => _x( 'Create New Email', 'action', 'groundhogg' ),
+					'class' => 'button button-secondary add-email',
+				] ),
+				"</div>",
+
+				$html->wrap( [
+					$html->input( [
+
+						'name'  => $this->setting_name_prefix( 'winner' ),
+						'id'    => $this->setting_id_prefix( 'winner' ),
+						'type'  => 'radio',
+						'value' => 'winner_b',
+					] ),
+					__( 'Declare this email as winner' )
+				], 'p' ),
+
+			] );
+
+			$html->end_row();
+
+			$html->end_form_table();
+		}
+
 	}
 
 
@@ -203,33 +219,60 @@ class Split_Email extends Action {
 	 */
 	public function save( $step ) {
 
-		wp_send_json( $_POST );
+		if ( $this->get_setting( 'winner' ) ) {
+			parent::save( $step );
+			if ( $this->get_posted_data( 'enable_split' ) ){
+				$this->save_setting( 'winner' , '' );
+			}
 
-		$email_id = absint( $this->get_posted_data( 'email_id' ) );
-
-		$this->save_setting( 'email_id', $email_id );
-
-		$email = new Email( $this->get_setting( 'email_id' ) );
+		} else {
 
 
-		if ( ! $email->exists() ) {
-			$this->add_error( 'email_dne', __( 'You have not selected an email to send in one of your steps.', 'groundhogg' ) );
+			$email_a_id = absint( $this->get_posted_data( 'email_a_id' ) );
+
+			$this->save_setting( 'email_a_id', $email_a_id );
+
+			$email = new Email( $this->get_setting( 'email_a_id' ) );
+
+
+			if ( ! $email->exists() ) {
+				$this->add_error( 'email_dne', __( 'You have not selected an email to send in one of your steps.', 'groundhogg' ) );
+			}
+
+			if ( ( $email->is_draft() && $step->get_funnel()->is_active() ) ) {
+				$this->add_error( 'email_in_draft_mode', __( 'You still have emails in draft mode! These emails will not be sent and will cause automation to stop.' ) );
+			}
+
+
+			$email_b_id = absint( $this->get_posted_data( 'email_b_id' ) );
+
+			$this->save_setting( 'email_b_id', $email_b_id );
+
+			$email = new Email( $this->get_setting( 'email_b_id' ) );
+
+
+			if ( ! $email->exists() ) {
+				$this->add_error( 'email_dne', __( 'You have not selected an email to send in one of your steps.', 'groundhogg' ) );
+			}
+
+			if ( ( $email->is_draft() && $step->get_funnel()->is_active() ) ) {
+				$this->add_error( 'email_in_draft_mode', __( 'You still have emails in draft mode! These emails will not be sent and will cause automation to stop.' ) );
+			}
+
+
+			if ( $this->get_posted_data( 'winner' ) ) {
+
+				if ( $this->get_posted_data( 'winner' ) == 'winner_a' ) {
+					$this->save_setting( 'email_id', $this->get_setting( 'email_a_id' ) );
+					$this->save_setting( 'winner', $this->get_setting( 'email_a_id' ) );
+				} elseif ( $this->get_posted_data( 'winner' ) == 'winner_b' ) {
+
+					$this->save_setting( 'email_id', $this->get_setting( 'email_b_id' ) );
+					$this->save_setting( 'winner', $this->get_setting( 'email_b_id' ) );
+				}
+			}
 		}
 
-		if ( ( $email->is_draft() && $step->get_funnel()->is_active() ) ) {
-			$this->add_error( 'email_in_draft_mode', __( 'You still have emails in draft mode! These emails will not be sent and will cause automation to stop.' ) );
-		}
-
-		$this->save_setting( 'split_email_id', absint( $this->get_posted_data( 'split_email_id' ) ) );
-
-		if ( $this->get_posted_data( 'winner_a' ) ) {
-			$this->save_setting( 'winner', 'a' );
-		}
-
-
-		if ( $this->get_posted_data( 'winner_b' ) ) {
-			$this->save_setting( 'winner', 'b' );
-		}
 
 	}
 
@@ -243,24 +286,22 @@ class Split_Email extends Action {
 	 */
 	public function run( $contact, $event ) {
 
+		if ( $this->get_setting( 'winner' ) ) {
+			return parent::run( $contact, $event );
+		} else {
 
-		$email_id = absint( $this->get_setting( 'email_id' ) );
-//
-		$email = Plugin::$instance->utils->get_email( $email_id );
-//
-		if ( absint( $this->get_setting( 'last_send' ) ) == absint( $email->get_id() ) ) {
-			$email = Plugin::$instance->utils->get_email( absint( $this->get_setting( 'split_email_id' ) ) );
-			//or
-//			$email =  new Email(absint( $this->get_setting( 'split_email_id' ) )) ;
+
+			$sent       = absint( $this->get_setting( 'sent' ) );
+			$email_a_id = absint( $this->get_setting( 'email_a_id' ) );
+			$email_b_id = absint( $this->get_setting( 'email_b_id' ) );
+			$email_id   = $sent % 2 === 0 ? $email_b_id : $email_a_id;
+			$email      = new Email( $email_id );
+			$this->save_setting( 'sent', $sent + 1 );
+
+			return $email->send( $contact, $event );
 		}
 
-		if ( ! $email ) {
-			return new \WP_Error( 'email_dne', 'Invalid email ID provided.' );
-		}
 
-		$this->save_setting( 'last_send', $email->get_id() );
-
-		return $email->send( $contact, $event );
 	}
 
 
