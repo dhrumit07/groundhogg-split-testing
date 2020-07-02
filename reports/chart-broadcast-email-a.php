@@ -10,9 +10,6 @@ use function Groundhogg\get_request_var;
 
 class Chart_Broadcast_Email_A extends Chart_Last_Broadcast {
 
-
-
-
 	protected function normalize_data( $stats ) {
 
 		if ( empty( $stats ) ) {

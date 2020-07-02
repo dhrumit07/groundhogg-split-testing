@@ -5,8 +5,8 @@ use Groundhogg\Email;
 use Groundhogg\Plugin;
 use function Groundhogg\get_db;
 use function Groundhogg\get_url_var;
-
-wp_enqueue_script( 'groundhogg-admin-reporting-split-testing' );
+//
+//wp_enqueue_script( 'groundhogg-admin-reporting-split-testing' );
 
 $broadcasts = get_db( 'broadcastmeta' );
 $broadcasts = $broadcasts->query();
@@ -68,13 +68,13 @@ foreach ( $broadcasts as $broadcast ) {
 </div>
 <div class="groundhogg-chart-wrapper">
     <div class="groundhogg-chart-no-padding" style="width: 100% ; margin-right: 0px;">
-        <h2 class="title"><?php _e( 'Broadcast A Link Clicked', 'groundhogg' ); ?></h2>
+        <h2 class="title"><?php _e( 'Email A Link Clicked', 'groundhogg' ); ?></h2>
         <div id="table_broadcast_link_clicked_a"></div>
     </div>
 </div>
 <div class="groundhogg-chart-wrapper">
     <div class="groundhogg-chart-no-padding" style="width: 100% ; margin-right: 0px;">
-        <h2 class="title"><?php _e( 'Broadcast B Link Clicked', 'groundhogg' ); ?></h2>
+        <h2 class="title"><?php _e( 'Email B Link Clicked', 'groundhogg' ); ?></h2>
         <div id="table_broadcast_link_clicked_b"></div>
     </div>
 </div

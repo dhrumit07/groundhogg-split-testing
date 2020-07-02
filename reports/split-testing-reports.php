@@ -98,7 +98,8 @@ class Split_Testing_Reports {
 
 		return $report->get_data();
 	}
-public function table_broadcast_stats_compare() {
+
+	public function table_broadcast_stats_compare() {
 		$report = new Table_Broadcast_Stats_Compare( $this->start, $this->end );
 
 		return $report->get_data();

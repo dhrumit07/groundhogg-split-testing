@@ -5,6 +5,7 @@ namespace GroundhoggSplitTesting;
 use Groundhogg\Admin\Admin_Menu;
 use Groundhogg\DB\Manager;
 use Groundhogg\Extension;
+use GroundhoggSplitTesting\Reports\Split_Test_Funnel_Reports;
 use GroundhoggSplitTesting\Reports\Split_Testing_Reports;
 use GroundhoggSplitTesting\Steps\Split_Email;
 
@@ -24,7 +25,7 @@ class Plugin extends Extension {
 	 * @return void
 	 */
 	public function includes() {
-        require  GROUNDHOGG_SPLIT_TESTING_PATH . '/includes/functions.php';
+//        require  GROUNDHOGG_SPLIT_TESTING_PATH . '/includes/functions.php';
 	}
 
 	/**
@@ -35,7 +36,8 @@ class Plugin extends Extension {
 	public function init_components() {
 
 		new Split_Test();
-//		new Split_Testing_Reports();
+		new Split_Testing_Reports();
+		new Split_Test_Funnel_Reports();
 	}
 
 	/**

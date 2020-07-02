@@ -99,7 +99,7 @@ class Table_Broadcast_Stats_Compare extends Base_Table_Report {
 								'activity_type' => Activity::EMAIL_OPENED,
 								'step_id'       => $broadcast->get_id(),
 								'funnel_id'     => $broadcast->get_funnel_id(),
-								'email_id'      => $email_b->get_id()
+								'email_id'      =>$broadcast->get_object()->get_id()
 							]
 						],
 						admin_url( sprintf( 'admin.php?page=gh_contacts' ) )
@@ -139,7 +139,7 @@ class Table_Broadcast_Stats_Compare extends Base_Table_Report {
 								'activity_type' => Activity::EMAIL_CLICKED,
 								'step_id'       => $broadcast->get_id(),
 								'funnel_id'     => $broadcast->get_funnel_id(),
-								'email_id'      => $email_b->get_id()
+								'email_id'      => $broadcast->get_object()->get_id()
 							]
 						],
 						admin_url( sprintf( 'admin.php?page=gh_contacts' ) )
@@ -180,7 +180,7 @@ class Table_Broadcast_Stats_Compare extends Base_Table_Report {
 								'activity_type' => Activity::UNSUBSCRIBED,
 								'step_id'       => $broadcast->get_id(),
 								'funnel_id'     => $broadcast->get_funnel_id(),
-								'email_id'      => $email_b->get_id()
+								'email_id'      => $broadcast->get_object()->get_id()
 							]
 						],
 						admin_url( sprintf( 'admin.php?page=gh_contacts' ) )
